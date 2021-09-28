@@ -1,0 +1,311 @@
+function event_taxonomy() {
+    register_taxonomy(
+        'event_cat',  // The name of the taxonomy. Name should be in slug form (must not contain capital letters or spaces).
+        'event',             // post type name
+        array(
+            'hierarchical' => true,
+            'label' => 'Event Category', // display name
+            'query_var' => true,
+			'show_ui' => true,
+			'show_in_rest' => true,
+			'show_admin_column' => true,
+            'rewrite'      => array('slug' => 'event', 'with_front' => true)
+        )
+    );
+    //flush_rewrite_rules();
+}
+add_action( 'init', 'event_taxonomy');
+
+function wpb_upcoming_posts() { 
+	ob_start();
+	?>
+	<form method="GET" action="https://productgym.io/events-v2/" class="filter-form" id="searchform">
+			<div class="post-filter">
+			<input type="text" name="search" value="<?php echo $_GET['search']; ?>" class="searchbox" placeholder="Type a Keyword"/>
+			</div>
+				
+			
+			<div class="post-filter">
+					<h3>Category</h3>
+					<ul class="filter-option">
+					<?php
+					$categories = get_categories( array(
+						'taxonomy' => 'event_cat',
+
+					) );
+					$category_count = 1;
+					echo '<li><a href="https://productgym.io/events-v2/">All</li></a>';
+                    foreach ( $categories as $category ) {
+                        if($_GET['category'] == $category->slug  ) {
+                            $selected = 'checked';
+                        }elseif($category_count === 0){
+                            $selected = 'checked';
+                        }else{
+                            $selected = '';
+                        }
+                        echo '<li><input type="radio" id="category-'.$category->term_id.'" name="category" value="'.$category->slug.'" '.$selected.'><label for="category-'.$category->term_id.'">'.$category->name.'</label></li>';
+                        $category_count++;
+                    }
+					?>
+					</ul>
+				</div>
+
+
+			<input type="submit" class="submit_btn" value="Submit" style="display: none;"></form>
+			<?php
+				$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+				
+							
+					
+					if($_GET['category']){
+						$category = $_GET['category'];
+					}else {
+						$category = '';
+					}
+					if($_GET['search']){
+						$search = $_GET['search'];
+					}else {
+						$search = '';
+					}
+
+					$options = array(
+						'post_type' => 'event',
+						'order' => 'desc',
+						'orderby' => 'date',
+						'posts_per_page' => '6',
+						'paged' => $paged,
+						'event_cat' 	=> $category,
+						's' 	=> $search, 
+
+					);
+
+    $query = new WP_Query( $options );
+
+?>
+	<script>
+		jQuery(function($){
+		$('ul.filter-option li input').on('change', function(){
+			$('.filter-form').submit();
+		});
+	});
+	</script>
+	<style>
+			.post-filter h3 {
+			    margin-top: 20px;
+			}
+			.post-filter label:hover {
+			    color: black;
+			}
+			.post-filter label:focus {
+			    color: black;
+			}
+			.post-filter label {
+			    cursor: pointer;
+			}
+			.filter-option li input {
+			    display: none;
+			}
+			ul.filter-option {
+			    list-style-type: none !important;
+			    margin: 0;
+			    padding: 0;
+			}
+			.filter-option li {
+			    display: inline;
+			    margin: 8px;
+			}
+			.filter-option a {
+			    color: black !important;
+			}
+			a.page-numbers {
+			    margin-right: calc( 30px/2 );
+			    margin-left: calc( 30px/2 );
+			}
+			.cstm-content {
+			    text-align: center;
+			    color: black;
+			    padding: 20px 0px;
+			}
+			form.filter-form {
+			    display: flex;
+			    flex-wrap: nowrap;
+			}
+			.post-filter {
+			    width: 99%;
+			    display: inline-block;
+			}
+			input.submit_btn {
+			    height: 45px;
+			    width: 15%;
+			}
+			span.date {
+		    width: 100%;
+		    display: flex;
+		    flex-wrap: nowrap;
+		    justify-content: center;
+		    margin: 20px 0px;
+		}
+		form.filter-form {
+		    display: inline;
+		}
+		.pagination-wrap {
+		    display: block;
+		    width: 100%;
+		    text-align: center;
+		}
+
+    	#searchform {
+    		margin-bottom:20px;
+    	}
+		.author_link a {
+		    display: block;
+		    margin: 10px;
+		}
+			span.time {
+		    width: 100%;
+		    display: flex;
+		    flex-wrap: nowrap;
+		    justify-content: center;
+		    margin-bottom: 40px;
+		}
+			a.cstm-btn {
+		    font-size: 16px;
+		    font-weight: bold;
+		    color: black !important;
+		}
+			.upcoming_posts {
+			    margin-top: 40px;
+			    display: flex;
+			    flex-wrap: wrap;
+			    row-gap: 50px;
+			    column-gap: 35px;
+			}
+        	.card {
+			    width: 31%;
+			    background-color: white;
+			    padding: 0px;
+			    box-shadow: 0px 1px 8px 6px rgb(202 202 202 / 54%);
+			    -webkit-box-shadow: 0px 1px 8px 6px rgb(202 202 202 / 54%);
+			    -moz-box-shadow: 0px 1px 8px 6px rgba(202,202,202,0.54);
+			}
+			h3.cstm-event-title {
+			    height: 110px;
+			    text-align: center;
+			    padding: 0px 20px;
+			}
+			h3.cstm-event-title a {
+			    color: black;
+			    font-size: 20px;
+			    text-align:center;
+			}
+			p.cstm-schedule {
+			    color: black;
+			    text-align: center;
+			}
+			p.cstm-author {
+			    color: black;
+			    text-align: center;
+			}
+			img.featured_image.ls-is-cached.lazyloaded {
+			    width: 100%;
+			    height: 168px;
+			    object-fit: cover;
+			}
+		
+			@media screen and (min-width:768px) and (max-width:1024px){
+				.card {
+			    width: 45%;
+			    background-color: white;
+			    padding: 0px;
+			    box-shadow: 0px 1px 8px 6px rgb(202 202 202 / 54%);
+			    -webkit-box-shadow: 0px 1px 8px 6px rgb(202 202 202 / 54%);
+			    -moz-box-shadow: 0px 1px 8px 6px rgba(202,202,202,0.54);
+			}
+			}
+			@media screen and (max-width:767px){
+			
+        	}
+        	</style>
+
+<?php        	
+if ( $query->have_posts() ) {  ?>
+<div class="upcoming_posts">
+
+	<?php 
+	while ( $query->have_posts() ) {
+							$query->the_post(); ?>
+			<?php
+					$categories = get_the_category();
+					$separator = ', ';
+					$output = '';
+					if ( ! empty( $categories ) ) {
+						foreach( $categories as $category ) {
+							$output .= '<a href="' . esc_url( get_category_link( $category->name ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'textdomain' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
+						}
+								echo trim( $output, $separator );
+					}
+				?>
+	    <div class="card">
+	    	<?php
+	    		$author_id = get_post_field ('post_author', $cause_id);
+				$display_name = get_the_author_meta( 'display_name' , $author_id ); 
+		        $url = wp_get_attachment_url( get_post_thumbnail_id($post->ID), 'thumbnail' );?>
+		        <?php if ($url == true){
+
+				echo "<img class='featured_image' src='$url'/>";
+				}
+				else{
+					echo "<img class='featured_image' src='/wp-content/uploads/2021/09/thumbnail.png'/>";
+					
+				}
+	    	?>
+	        <div class="cstm-content">
+	            <?php echo ( '<h3 class="cstm-event-title">' . get_the_title() . '</h3>' );
+	           $date = new DateTime(get_field('schedule'));
+        ?>
+		        <div class="author_link">
+		        <a href="<?php the_field('author_link_1');?>" target='_blank'><?php the_field('author_1');?></a>
+		        <a href="<?php the_field('author_link_2');?>" target='_blank'><?php the_field('author_2');?></a>
+		        <a href="<?php the_field('author_link_3');?>" target='_blank'><?php the_field('author_3');?></a>
+		    	</div>
+		    	<span class="date"><?php echo $date->format('D, M d, Y'); ?></span>
+				<span class="time"><?php echo $date->format('h:i A'); ?> EST</span>
+				<a class="cstm-btn" href="<?php the_field('rsvp_link'); ?>" target='_blank'>RSVP HERE</a> 
+	        </div>
+	    </div>	
+
+
+<?php 
+// endwhile;
+}
+$total_pages = $query->max_num_pages;
+$big = 999999999;
+
+    if ($total_pages > 1){
+
+        $current_page = max(1, get_query_var('paged'));
+
+		echo '<div class="pagination-wrap">';
+		        echo paginate_links(array(
+		            'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+		            'format' => '/page/%#%',
+		            'current' => $current_page,
+		            'total' => $total_pages,
+		            'prev_text'    => __(' <i class="fa fa-chevron-left"></i> PREVIOUS'),
+		            'next_text'    => __('NEXT <i class="fa fa-chevron-right"></i>'),
+		        ));
+		    }
+		echo '</div>';
+	}		 
+wp_reset_postdata(); ?>
+
+<?php
+        // $output = ob_get_clean();
+       	return ob_get_clean();
+    
+}	
+
+// Add shortcode
+add_shortcode('upcoming_posts', 'wpb_upcoming_posts'); 
+// Enable shortcode execution inside text widgets
+add_filter('widget_text', 'do_shortcode');
